@@ -1,0 +1,914 @@
+<html>
+	<head>
+		<link href="https://fonts.googleapis.com/css?family=Fjalla+One|Open+Sans:300i,400|Oswald:300,400" rel="stylesheet">
+		<style>
+			.sensorPlate {
+				position:absolute;
+			}
+
+			.sensor-plate-passive {
+				opacity:0.92;
+			}
+
+			.sensor-plate-active {
+				opacity:0.94;
+				filter:brightness(1.25);
+				z-index:990;
+			}
+
+			.selected-content {
+				opacity:0.95;
+				filter:brightness(1.05);
+			}
+
+			.hidden {
+				display:none;
+			}
+
+			.lcars-bottom {
+				background-color: rgba(10,10,10,0.65);
+				color: rgba(200,200,200,0.95);
+				text-align: center;
+				position: fixed;
+				bottom: 0px;
+				width:850px;
+				left: 50%;
+				height: 112px;
+				margin-left:-425px;
+				font-family:'Fjalla One',Sans-Serif;
+			}
+
+			.lcars-minimized {
+				height: 20px;
+			}
+
+			.lcars-title {
+				text-align:left;
+				top:10%;
+			}
+
+			.lcars-pointref {
+				color: rgba(120,120,120,0.85);
+				text-align:right;
+			}
+
+			.lcars-columns {
+				columns: 5;
+			}
+
+			.lcars-header {
+				columns: 2;
+			}
+			table {
+				border-collapse: separate;
+				border-spacing: 0px 0px;
+			}
+			table td {
+				color: rgba(200,200,200,0.9);
+				vertical-align:top;
+			}
+
+			.lcars-bottom-ui-base {
+				background-color: rgba(10,10,10,0.65);
+				color: rgba(200,200,200,0.95);
+				text-align: center;
+				position: fixed;
+				bottom: 0px;
+				width:850px;
+				left: 50%;
+				margin-left:-425px;
+				font-family:'Fjalla One',Sans-Serif;
+				padding-left:8px;
+				padding-right:8px;
+				padding-top:1px;
+				z-index:999;
+			}
+
+			.lcars-bottom-header {
+				columns: 2;
+			}
+
+			.lcars-bottom-selector {
+				height:100px;
+			}
+
+			.mission-patch {
+				margin-top:0;
+			}
+
+			.selector-label {
+				font-family:'Fjalla One',Open-Sans;
+				font-weight: normal;
+			}
+
+			.selector-text {
+				font-family:'Oswald',Open-Sans;
+				font-weight: 300;
+			}
+
+			.pointer-events-off {
+				pointer-events: none;
+			}
+		</style>
+	</head>
+	<body onload="startTheClock2()">
+		<div id="debug" class="">
+
+		</div>
+
+		<div id="starmap">
+			<img id="map" src="http://i.imgur.com/hRSCfJe.jpg" onclick="clickedSpot(event);"/>
+		</div>
+
+		<div id="sensorSweep">
+		</div>
+
+		<div class="lcars-bottom-ui-base">
+			<div class="lcars-bottom-header">
+				<div class="lcars-title">
+					FLEET OPS - 26TH FLEET
+				</div>
+				<span id="pointref" class="lcars-pointref">
+					(0,0)
+				</span>
+				<a id="minimizer" onclick="minimizeFleetOps();">
+					[Min]
+				</a>
+				<a id="mapGrid" onclick="toggleMapGrid();">
+					[Grid]
+				</a>
+				<a id="mapBorders" onClick="toggleMapBoundaries();">
+					[Borders]
+				</a>
+			</div>
+			<div id="MSD" class="lcars-bottom-selector">
+				<table width="100%" class="selector">
+					<tr>
+						<td width="335px">
+							<img id="selectedPatch" class="selected-content mission-patch missionPatch" src="http://i.imgur.com/0gSkAgC.png"  height="98" />
+							<img id="selectedSensorPlate" class="selected-content sensorIndicator" src="http://i.imgur.com/AgBIMm6.png" onclick="openWiki(shipData[selected].wiki);" height="98" />
+						</td>
+						<td>
+							<img class="selector-label faction" id="selectedFaction" src="" alt="No Data" height="18"/>
+							<span class="selector-label subfaction" id="selectedSubfaction"></span>
+							<br/>
+							<label class="selector-label" for="selectedSector">Position:</label>
+							<span class="selector-text position" id="selectedSector">Sector Unknown</span>
+							<br/>
+							<a class="selector-text positionCoords" id="selectedPosition" onclick="centerOnSelected();">
+								Coordinates Unknown
+							</a>
+							<br/>
+							<label class="selector-label" for="selectedSpeed">Speed:</label>
+							<a class="selector-text speed" id="selectedSpeed" onclick="cycleWarpFormat();">
+								Not Available
+							</a>
+						</td>
+						<td width="204px">
+							<label class="selector-label" for="selectedTaskUnit">Task Unit:</label>
+							<span class="selector-text" id="selectedTaskUnit">Alone</span>
+							<br/>
+							<label class="selector-label" for="selectedDestinationName">Destination:</label>
+							<a class="selector-text destination" id="selectedDestinationName" onclick="openWiki(shipData[selected].destWiki);">
+								Unidentified
+							</a>
+							<br/>
+							<span class="selector-text distance" id="selectedDistance">
+								Coordinates
+							</span>
+							<a class="selector-text destinationCoords" id="selectedDestination" onclick="centerOnPoint(shipData[selected].destX,shipData[selected].destY);">
+								Unknown
+							</a>
+							<br/>
+							<label class="selector-label" title="Estimated Time of Arrival" for="selectedCountdown">ETA:</label>
+							<a class="selector-text eta" id="selectedETA" onclick="cycleETA();")>
+								Not Available
+							</a>
+						</td>
+						<td width="170px">
+							<center>
+								<label for="stardate">Stardate</label>
+								<span id="stardate">
+									Unknown
+								</span>
+								<div class="selector-text" id="shipdate">
+									Date Unknown
+								</div>
+								<div class="selector-text" id="shipclock">
+									00:00:00
+								</div>
+							</center>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</body>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+	var shipData = [];
+	var refreshDelay = 900000; // in milliseconds
+
+	var navData = {};
+
+	var dataLoaded = 0;
+
+	function getNavigation2() {
+		// parse nav data
+		// https://docs.google.com/spreadsheets/d/1wtDQerWYSwof6SbIBgnJmK5qf5qSE7Sc6wRTfjgoM7U/edit?usp=sharing
+		$.getJSON("https://spreadsheets.google.com/feeds/list/1wtDQerWYSwof6SbIBgnJmK5qf5qSE7Sc6wRTfjgoM7U/od6/public/values?alt=json", function(data) {
+			for (var i = 0; i < data.feed['openSearch$totalResults']['$t']; i++) {
+				var e = data.feed.entry[i];
+				var n = {
+					"x":parseFloat(e['gsx$x']['$t']),
+					"y":parseFloat(e['gsx$y']['$t']),
+					"wiki":e['gsx$wiki']['$t'],
+				};
+				navData[e['gsx$location']['$t']] = n;
+			}
+			getShipCheckins();
+		});
+	}
+
+	function getShipCheckins() {
+		$.getJSON("https://spreadsheets.google.com/feeds/list/1JPbD3smWLr85-83vazj2wizhfd_1rOJssnST5oqQjVE/od6/public/values?alt=json", function(data) {
+			var tempData = [];
+			for (var i = 0; i < data.feed['openSearch$totalResults']['$t']; i++) {
+				var e = data.feed.entry[i];
+				var d = new Date(data.feed.entry[i]['gsx$time']['$t']);
+				tempData[i] = {
+					"id":i,
+					"ship":e['gsx$name']['$t'],
+					"patch":e['gsx$patch']['$t'],
+					"sensorPlate":e['gsx$sensor']['$t'],
+					"x":parseFloat(e['gsx$originx']['$t']),
+					"y":parseFloat(e['gsx$originy']['$t']),
+					"warp":parseFloat(e['gsx$speed']['$t']),
+					"destName":e['gsx$destinationname']['$t'],
+					"destX":parseFloat(e['gsx$destinationx']['$t']),
+					"destY":parseFloat(e['gsx$destinationy']['$t']),
+					"lastReported":d.valueOf(),
+					"wiki":e['gsx$wiki']['$t'],
+					"faction":e['gsx$faction']['$t'],
+					"subfaction":e['gsx$subfaction']['$t'],
+				};
+				var navpoint = navData[tempData[i].destName];
+				if (navpoint != null) {
+					tempData[i].destX = navpoint.x;
+					tempData[i].destY = navpoint.y;
+					tempData[i].destWiki = navpoint.wiki;
+				}
+			}
+			shipData = tempData;
+			dataLoaded = 1;
+		});
+		setTimeout(getNavigation2, refreshDelay); // Run another scan of the spreadsheet in 10 minutes
+	}
+
+	function startTheClock2() {
+		// Set regular checkin (pull data from spreadsheet every 15 minutes)
+		getNavigation2();
+		// run the clock and update real time data.
+		theClockIsTicking2();
+
+		// create destination indicator (I really need to put this in a nicer place)
+		var img = $("<img>");
+		img.attr("id","destinationIndicator");
+		img.attr("src","http://i.imgur.com/oCE1KtJ.png");
+		img.attr("height","24px");
+		img.attr("width","24px");
+		img.attr("onClick","clickedSpot(event);");
+		img.addClass("hidden");
+		img.addClass("sensorPlate");
+		$("#sensorSweep").append(img);
+	}
+
+	function theClockIsTicking2() {
+		setClock();
+
+		// only run if data finished loading
+		if (dataLoaded != 0) {
+			// render sensor readings and positions
+			for (var i = 0; i < shipData.length; i++) {
+				moveShip2(shipData[i]);
+			}
+			//selectShip2(0);
+		}
+
+		setTimeout(theClockIsTicking2, 1000);
+	}
+
+	function moveShip2(s) {
+		createSensorPlate(s); // this will only create one if it does not exist
+
+		// run calculations for moving ship and move main ship widget. ----- Pretty big
+		// get time passed
+		var d = new Date();
+		var t = d.valueOf() - s.lastReported;
+		//s.lastReported = d.valueOf();
+
+		// get vector and length
+		var vx = s.destX - s.x;
+		var vy = s.destY - s.y;
+		var vlen = Math.pow(Math.pow(vx,2) + Math.pow(vy,2),0.5);
+
+		var w = warpFactorToPixelsPerMillisecond(s.warp);
+		var x = 0;
+		var y = 0;
+		// arrive at destination when distance travelled meets or exceeds distance of travel
+		if (t * w >= vlen) {
+			x = s.destX;
+			y = s.destY;
+		} else if (s.warp != 10) {
+			// normalize vector
+			var nx = vx / vlen;
+			var ny = vy / vlen;
+
+			// move ship along vector
+			x = s.x + (nx * w * t);
+			y = s.y + (ny * w * t);
+		} else {
+			x = Math.random() * 3999;
+			y = Math.random() * 3000;
+			vlen = Math.pow(Math.pow(s.destX - x,2) + Math.pow(s.destY - y,2),0.5);
+		}
+		var shipNameID = s.ship.replace(/ /g, "");
+		$("#" + shipNameID).css("left", x + $("#map").offset().left - 24);
+		$("#" + shipNameID).css("top", y + $("#map").offset().top - 38);
+		// --- All movement calculations and basic movement complete.
+
+		// get ETA for object
+		var eta = new Date();
+		eta.setTime(s.lastReported + (vlen / w));
+		s.eta = eta;
+
+		// roughly putting this back in
+		if (s == shipData[selected]) {
+			if (eta > new Date()) {
+				$("#destinationIndicator").removeClass("hidden");
+			} else {
+				$("#destinationIndicator").addClass("hidden");
+			}
+		}
+
+		// update ALL displays via class association ($(".class").each(function(i,e) { if e also has class eta or whatever, then assign ETA, etc. }
+		$("." + shipNameID).each( function(i,e) {
+			if ($(e).hasClass("position")) {
+				$(e).html("Sector " + getSector(x,y));
+			}
+			if ($(e).hasClass("positionCoords")) {
+				$(e).html("(" + x.toFixed(3) + ", " + y.toFixed(3) + ")");
+			}
+			if ($(e).hasClass("speed")) {
+				$(e).html(getSpeedString(s.warp, eta));
+			}
+			if ($(e).hasClass("destination")) {
+				if (s.destName != "" && s.destName != null) {
+					$(e).html(s.destName);
+				} else {
+					$(e).html("Sector " + getSector(s.destX,s.destY));
+				}
+			}
+			if ($(e).hasClass("destinationCoords")) {
+				$(e).html("(" + s.destX.toFixed(0) + ", " + s.destY.toFixed(0) + ")");
+			}
+			if ($(e).hasClass("distance")) {
+				if (eta > new Date()) {
+					$(e).html(((vlen - w * t)/12.8).toFixed(2) + "ly");
+				} else if (w == 0) {
+					$(e).html((vlen / 12.8).toFixed(2) + "ly");
+				} else {
+					$(e).html("0.00ly");
+				}
+			}
+			if ($(e).hasClass("eta")) {
+				if (s.warp != 10) {
+					$(e).html(getEtaString(eta));
+				} else {
+					$(e).html("Arrived?");
+				}
+			}
+			if ($(e).hasClass("sensorIndicator")) {
+				if (s.sensorPlate != "") {
+					if ($(e).attr("src") != s.sensorPlate) {
+						$(e).attr("src",s.sensorPlate);
+					}
+				} else {
+					if ($(e).attr("src") != "http://i.imgur.com/AgBIMm6.png") {
+						$(e).attr("src","http://i.imgur.com/AgBIMm6.png");
+					}
+				}
+			}
+			if ($(e).hasClass("missionPatch")) {
+				if (s.patch != "") {
+					if ($(e).attr("src") != s.patch) {
+						$(e).attr("src",s.patch);
+					}
+				} else {
+					if ($(e).attr("src") != "https://i.imgur.com/9ci3eOg.png") {
+						$(e).attr("src","https://i.imgur.com/9ci3eOg.png");
+					}
+				}
+			}
+			if ($(e).hasClass("faction")) {
+				if (s.faction != "") {
+					if ($(e).attr("src") != "http://i.imgur.com/zpHdw43.png") {
+						$(e).attr("src", "http://i.imgur.com/zpHdw43.png");
+					}
+				} else {
+					if ($(e).attr("src") != "") {
+						$(e).attr("src", "");
+					}
+				}
+			}
+			if ($(e).hasClass("subfaction")) {
+				$(e).html(s.subfaction);
+			}
+		});
+		// --- Alright the class idea took a lot more code than I thought it would, but this does allow multiselect.
+
+		// if sensor plate is hidden, unhide it at this point.
+		if ($("#" + shipNameID).hasClass("hidden")) {
+			$("#" + shipNameID).removeClass("hidden");
+		}
+	}
+
+	function getSpeedString(w, eta) {
+		if (eta > new Date() && w != 0) {
+			switch (warpFormat % 2) {
+				case 0: // warp factor
+						return "Warp " + w;
+				case 1: // c factor
+					if (w == 10) {
+						return "Ludicrous";
+					} else {
+						return warpToC(w).toFixed(0) + "c";
+					}
+				default: // unrecognized format
+					return "Unknown format";
+			}
+		} else if (w == 10) {
+			switch (warpFormat % 2) {
+				case 0: return "Warp 10";
+				case 1: return "Ludicrous";
+				default: return "Still Ludicrous";
+			}
+		} else {
+			switch (warpFormat % 2) {
+				case 0: return "Impulse";
+				case 1: return "0c";
+				default: return "Unknown format";
+			}
+		}
+	}
+
+	function getEtaString(eta) {
+		if (eta > new Date()) {
+			switch (etaFormat % 3) {
+				case 0: return getTimeRemainingString(new Date(),eta);// countdown
+				case 1: return "Stardate " + getStardate(getDisplayDate(eta)).toFixed(2); // arrival stardate
+				case 2: return clockString(getDisplayDate(eta)); // arrival date
+				default: return "Unknown ETA Format";
+			}
+		} else {
+			return "Arrived";
+		}
+	}
+
+	function createSensorPlate(s) {
+		if ( !$("#" + s.ship.replace(/ /g, "")).length ) {
+			var img = $("<img>");
+			img.attr('id',s.ship.replace(/ /g, ""));
+			img.attr('src',s.sensorPlate);
+			img.attr('height', "75.6");
+			img.attr("width", "179.25");
+			img.attr("onClick", "selectShip2(" + s.id + ");clickedSpot(event);");
+			img.addClass("sensorPlate");
+			img.addClass("sensor-plate-passive");
+			img.addClass("hidden");
+			$("#sensorSweep").append(img);
+		}
+	}
+
+	function enablePointerEvents(sensorID) {
+		$("#" + sensorID).removeClass("pointer-events-off");
+	}
+
+	function selectShip2(id) {
+		// update sensor plate to active
+		if (selected != null) {
+			$("#" + shipData[selected].ship.replace(/ /g, "")).removeClass("sensor-plate-active");
+			$("#" + shipData[selected].ship.replace(/ /g, "")).addClass("sensor-plate-passive");
+		}
+		var newShipNameID = shipData[id].ship.replace(/ /g, "");
+		$("#" + newShipNameID).removeClass("sensor-plate-passive");
+		$("#" + newShipNameID).addClass("sensor-plate-active");
+
+		// remove classes for old ship from selection elements and add classes for new ship
+		var oldShipNameID = "noShipSelected";
+		if (selected != null) { // yeah, yeah...
+			oldShipNameID = shipData[selected].ship.replace(/ /g, "");
+		}
+
+		selected = id;
+
+		$("#" + newShipNameID).addClass("pointer-events-off");
+		setTimeout(function() { enablePointerEvents(newShipNameID); }, 500);
+
+		$("#selectedSector").removeClass(oldShipNameID);
+		$("#selectedSector").addClass(newShipNameID);
+		$("#selectedPatch").removeClass(oldShipNameID);
+		$("#selectedPatch").addClass(newShipNameID);
+		$("#selectedSensorPlate").removeClass(oldShipNameID);
+		$("#selectedSensorPlate").addClass(newShipNameID);
+		$("#selectedPosition").removeClass(oldShipNameID);
+		$("#selectedPosition").addClass(newShipNameID);
+		$("#selectedDestination").removeClass(oldShipNameID);
+		$("#selectedDestination").addClass(newShipNameID);
+		$("#selectedSpeed").removeClass(oldShipNameID);
+		$("#selectedSpeed").addClass(newShipNameID);
+		$("#selectedDistance").removeClass(oldShipNameID);
+		$("#selectedDistance").addClass(newShipNameID);
+		$("#selectedCountdown").removeClass(oldShipNameID);
+		$("#selectedCountdown").addClass(newShipNameID);
+		$("#selectedDestinationName").removeClass(oldShipNameID);
+		$("#selectedDestinationName").addClass(newShipNameID);
+		$("#selectedFaction").removeClass(oldShipNameID);
+		$("#selectedFaction").addClass(newShipNameID);
+		$("#selectedSubfaction").removeClass(oldShipNameID);
+		$("#selectedSubfaction").addClass(newShipNameID);
+		$("#selectedETA").removeClass(oldShipNameID);
+		$("#selectedETA").addClass(newShipNameID);
+
+		// update destination indicator position
+		$("#destinationIndicator").css("left", shipData[id].destX - 4);
+		$("#destinationIndicator").css("top", shipData[id].destY - 4);
+
+		moveShip2(shipData[id]); // to update its movement and displays.
+	}
+
+	function selectShipRoulette(x,y) {
+		// somehow figure out everything at the clicked spot and create a list
+		// record time
+		// if new time is less than 1s, figure out which ship in the list is selected and move to the next ship in the list.
+		// selectShip2(id);
+	}
+
+	var selected;
+
+	function centerOnSelected() {
+		var elem = $("#" + shipData[selected].ship.replace(/ /g, ""));
+
+		window.scrollTo(elem.offset().left - (screen.width/2) + 32, elem.offset().top - (screen.height / 2) + 77);
+	}
+
+	function centerOnPosition() {
+		centerOnPoint(shipData[selected].x,shipData[selected].y);
+	}
+
+	function centerOnPoint(x,y) {
+		window.scrollTo(x - (screen.width/2) + 14, y - (screen.height / 2) + 55);
+		//window.scrollTo(x + $("#map").offset().left - (screen.width/2), y + $("#map").offset().top - $("#map").offset().bottom - (screen.height / 2));
+	}
+
+	function setClock() {
+		var d = new Date();
+		d = getDisplayDate(d);
+
+		// set clocks
+		$("#shipdate").html(getDowAndDateString(d));
+		$("#shipclock").html(getTimeOfDayString(d));
+		$("#stardate").html(getStardate(d).toFixed(2));
+	}
+
+	function getDisplayDate(d1) {
+		// change to EST
+		var d = new Date();
+		d.setTime(d1.valueOf() - 18000000);
+
+		// deal with DST
+		var dst = getDST(d.getUTCFullYear());
+		if (dst.startDST < d && d < dst.endDST) {
+			d.setTime(d.valueOf() + 3600000);
+		}
+
+		return d;
+	}
+
+	function warpFactorToPixelsPerMillisecond(w) {
+		// Use traditional formula to calculate your level of C, then multiply out.
+		// values are 12.8 (pixels per lightyear) and various time divisions to get it down to one millisecond.
+		// warpScale is a global scalar to set to your desired speed of plot.
+
+		var warpScale = 1.0;
+
+		// $("#debug").html((7912 + (9.9999-9.99)*19353939.393939393939));
+
+		if (w >= 1.0 && w <= 9.0) {
+			return (warpScale * Math.pow(w,10/3) * (12.8 / 365.25 / 24 / 60 / 60 / 1000));
+		} else if (w > 9.0 && w <= 9.2) {
+			return (warpScale * 1516 * (12.8 / 365.25 / 24 / 60 / 60 / 1000) * Math.pow(1.52076826,(w-9)));
+		} else if (w > 9.2 && w <= 9.6) {
+			return (warpScale * 1649 * (12.8 / 365.25 / 24 / 60 / 60 / 1000) * Math.pow(1.4419930987,(w-9.2)));
+		} else if (w > 9.6 && w <= 9.9) {
+			return (warpScale * 1909 * (12.8 / 365.25 / 24 / 60 / 60 / 1000) * Math.pow(4.7833850857,(w-9.6)));
+		} else if (w > 9.9 && w <= 9.99) {
+			return (warpScale * 3053 * (12.8 / 365.25 / 24 / 60 / 60 / 1000) * Math.pow(39364.548075773,(w-9.9)));
+		} else if (w > 9.99 && w < 10) {
+			return (warpScale * (7912 + (w-9.99)*19353939.393939393939) * (12.8 / 365.25 / 24 / 60 / 60 / 1000)); // had to use a linear for 9.9999, may reinvestigate later.
+		} else if (w < 1.0) {
+			return w * (12.8 / 365.25 / 24 / 60 / 60 / 1000);
+		} else {
+			return 0;
+		}
+	}
+
+	function getSector(x,y) {
+		x = Math.floor(x) - 28;
+		y = Math.floor(y) - 86;
+
+		var letter = String.fromCharCode(Math.ceil(y/128) + 64);
+
+		return (letter + Math.ceil(x/128));
+	}
+
+	function getTimeRemainingString(d,eta) {
+		var totalms = eta.valueOf() - d.valueOf();
+		var totals = Math.floor(totalms / 1000);
+		var seconds = Math.floor(totals % 60);
+		var minutes = Math.floor((totals / 60) % 60);
+		var hours = Math.floor((totals / 60 / 60) % 24);
+		var days = Math.floor((totals / 60 / 60 / 24) % 365.25);
+		var years = Math.floor(totals / 60 / 60 / 24 / 365.25);
+		var s = seconds + "s";
+		if (minutes > 0 || hours > 0 || days > 0 || years > 0) {
+			s = minutes + "m " + s;
+		}
+		if (hours > 0 || days > 0 || years > 0) {
+			s = hours + "h " + s;
+		}
+		if (days > 0 || years > 0) {
+			s = days + "d " + s;
+		}
+		if (years > 0) {
+			s = years + "y " + s;
+		}
+		return s;
+	}
+
+	var WindowObjectReference;
+
+	function openWiki(w) {
+		if (w != "" && w != null) {
+			WindowObjectReference = window.open(w);
+		}
+	}
+
+	function clockString(d) {
+		return prependZero(d.getUTCHours()) + ":" + prependZero(d.getUTCMinutes()) + ":" + prependZero(d.getUTCSeconds()) + " " + getFullMonth(d.getUTCMonth()) + " " + d.getUTCDate() + ", " + (d.getUTCFullYear()+400);
+	}
+
+	function getDowAndDateString(d) {
+		return getFullDay(d.getUTCDay()) + ", " + getFullMonth(d.getUTCMonth()) + " " + d.getUTCDate() + ", " + (d.getUTCFullYear()+400);
+	}
+
+	function getTimeOfDayString(d) {
+		return prependZero(d.getUTCHours()) + ":" + prependZero(d.getUTCMinutes()) + ":" + prependZero(d.getUTCSeconds());
+	}
+
+	function prependZero(i) {
+		if (i < 10) {
+			i = "0" + i;
+		}
+		return i;
+	}
+
+	function getFullMonth(mo) {
+		switch (mo) {
+			case 0: mo = "January"; break;
+			case 1: mo = "February"; break;
+			case 2: mo = "March"; break;
+			case 3: mo = "April"; break;
+			case 4: mo = "May"; break;
+			case 5: mo = "June"; break;
+			case 6: mo = "July"; break;
+			case 7: mo = "August"; break;
+			case 8: mo = "September"; break;
+			case 9: mo = "October"; break;
+			case 10: mo = "November"; break;
+			case 11: mo = "December"; break;
+			default: break;
+		}
+		return mo;
+	}
+
+	function getFullDay(w) {
+		switch (w) {
+			case 0: w = "Sunday"; break;
+			case 1: w = "Monday"; break;
+			case 2: w = "Tuesday"; break;
+			case 3: w = "Wednesday"; break;
+			case 4: w = "Thursday"; break;
+			case 5: w = "Friday"; break;
+			case 6: w = "Saturday"; break;
+			default: break;
+		}
+		return w;
+	}
+
+	// Shamelessly copied from my own stardate calculator.
+	function getStardate(d) {
+		var year = d.getUTCFullYear();
+		var yearstart = Date.parse("January 1, " + year);
+		var yearend = Date.parse("January 1, " + (year+1));
+		var yeartotal = yearend.valueOf() - yearstart.valueOf();
+		var yearprogress = d.valueOf() - yearstart.valueOf();
+		var fractionprogress = yearprogress / yeartotal;
+		var stardateFull = (fractionprogress * 1000) + (year-1922.0)*1000 - 393.49793970592896;
+
+		return stardateFull;
+	}
+
+	function getDST(y) {
+		var base = y - 1200;
+		var adj = (base + Math.trunc(base / 4) - Math.trunc(base / 100) + Math.trunc(base / 400)); // THIS IS HOW YOU DO LEAP YEARS, WORLD.
+		var adjDoW = (adj + 3)%7; // For daylight savings time
+		if (adjDoW == 0) adjDoW = 7; // Quick and dirty manipulation so we get the right Sunday when the 1st falls on a Sunday.
+
+		var beginDST = new Date();
+		beginDST.setUTCFullYear(y);
+		beginDST.setUTCHours(2);
+		beginDST.setUTCMinutes(0);
+		beginDST.setUTCSeconds(0);
+		beginDST.setUTCMonth(3);
+		beginDST.setUTCDate(15 - adjDoW);
+		var endDST = new Date();
+		endDST.setUTCFullYear(y);
+		endDST.setUTCHours(2);
+		endDST.setUTCMinutes(0);
+		endDST.setUTCSeconds(0);
+		endDST.setUTCMonth(11);
+		endDST.setUTCDate(8 - adjDoW);
+
+		return {
+			startDST: beginDST,
+			endDST: endDST
+		};
+	}
+
+	function minimizeFleetOps() {
+		if ($("#minimizer").html() == "[Max]") {
+			$("#MSD").slideDown(250);
+			$("#minthis").removeClass("lcars-minimized");
+			$("#minimizer").html("[Min]");
+		} else {
+			$("#MSD").slideUp(250);
+			$("#minthis").addClass("lcars-minimized");
+			$("#minimizer").html("[Max]");
+		}
+	}
+
+	// Warp/C toggler
+	var warpFormat = 0;
+
+	function cycleWarpFormat() {
+		warpFormat++;
+		renderWarp2();
+	}
+
+	function renderWarp2() {
+		$("#selectedSpeed").html(getSpeedString(shipData[selected].warp, shipData[selected].eta));
+	}
+
+	function warpToC(w) {
+		warpScale = 1.0; // move this
+		var c = 0;
+		if (w >= 1.0 && w <= 9.0) {
+			c = (warpScale * Math.pow(w,10/3));
+		} else if (w > 9.0 && w <= 9.2) {
+			c = (warpScale * 1516 * Math.pow(1.52076826,(w-9)));
+		} else if (w > 9.2 && w <= 9.6) {
+			c = (warpScale * 1649 * Math.pow(1.4419930987,(w-9.2)));
+		} else if (w > 9.6 && w <= 9.9) {
+			c = (warpScale * 1909 * Math.pow(4.7833850857,(w-9.6)));
+		} else if (w > 9.9 && w <= 9.99) {
+			c = (warpScale * 3053 * Math.pow(39364.548075773,(w-9.9)));
+		} else if (w > 9.99 && w < 10) {
+			c = (warpScale * (7912 + (w-9.99)*19353939.393939393939)); // had to use a linear for 9.9999, may reinvestigate later.
+		} else if (w < 1.0 && w > 0) {
+			c = w;
+		} else if (w == 0 || etaDateObj <= new Date()) {
+			// c = "Impulse";
+		} else if (w == 10) {
+			c = "Ludicrous";
+		} else {
+			c = 0;
+		}
+		return c;
+	}
+
+	// ETA determination and rendering
+	// 0 = countdown
+	// 1 = stardate
+	// 2 = calendar
+	var etaFormat = 0;
+
+	function cycleETA() {
+		etaFormat++;
+		renderETA2();
+	}
+
+	function renderETA2() {
+		$("#selectedETA").html(getEtaString(shipData[selected].eta));
+	}
+
+	var mapGrids = 1;
+	var mapBoundaries = 1;
+
+	function mapToRender() {
+		// Fetches URL for desired map. If we get more variants, will convert to use a bit flag system.
+		if (mapGrids == 1) {
+			if (mapBoundaries == 1) {
+				return "http://i.imgur.com/0La8YlV.jpg";
+			} else {
+				return "http://i.imgur.com/Hsss5fy.jpg";
+			}
+		} else {
+			if (mapBoundaries == 1) {
+				return "http://i.imgur.com/7FJB5GD.jpg";
+			} else {
+				return "http://i.imgur.com/Jt84ssT.jpg";
+			}
+		}
+	}
+
+	function setMapRender() {
+		$("#map").attr("src", mapToRender());
+	}
+
+	function toggleMapGrid() {
+		if (mapGrids == 1) {
+			mapGrids = 0;
+		} else {
+			mapGrids = 1;
+		}
+		setMapRender();
+	}
+
+	function toggleMapBoundaries() {
+		if (mapBoundaries == 1) {
+			mapBoundaries = 0;
+		} else {
+			mapBoundaries = 1;
+		}
+		setMapRender();
+	}
+
+
+var clicks = 0;
+var originX = 0;
+var originY = 0;
+var sectorPxWidth = 128;
+var sectorLyWidth = 10;
+
+function clickedSpot(event) {
+	//clicks++;
+	clicks = 1;
+
+	//$("#pointref").html("(" + Math.round(event.offsetX + $(event.target).offset().left) + "," + (event.offsetY + $(event.target).offset().top) + ")");
+
+	var x = 0;
+	var y = 0;
+
+	if ($(event.target).attr("id") == "map") {
+		x = event.offsetX;
+		y = event.offsetY;
+		//$("#pointref").html("(" + Math.round(event.offsetX) + "," + (event.offsetY) + ")");
+		//$("#pointref").attr("onclick","");
+	} else {
+		x = Math.round(event.offsetX - $("#map").offset().left + $(event.target).offset().left);
+		y = Math.round(event.offsetY - $("#map").offset().top + $(event.target).offset().top);
+
+
+		//$("#pointref").html("(" + Math.round(event.offsetX - $("#map").offset().left + $(event.target).offset().left) + "," + Math.round(event.offsetY - $("#map").offset().top + $(event.target).offset().top) + ")");
+		//$("#pointref").attr("onclick","");
+	}
+	$("#pointref").html("(" + x + "," + y + ")");
+	$("#pointref").attr("onclick","centerOnPoint(" + x + "," + y + ");");
+
+
+	if (clicks % 2 == 0) {
+		var distanceP = Math.pow(Math.pow((originX - event.offsetX),2) + Math.pow((originY - event.offsetY),2),0.5);
+
+		var distanceLy = distanceP * sectorLyWidth / sectorPxWidth;
+
+		alert("USS Destiny moved ~" + Math.round(distanceLy) + "ly " + event.offsetX + " " + event.offsetY + " / " + $("#map").offset().left + " " + $("#map").offset().top);
+	} else {
+		originX = event.offsetX;
+		originY = event.offsetY;
+	}
+}
+
+</script>
+</html>
