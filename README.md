@@ -7,6 +7,8 @@ All ships actually move, and the starmap will occasionally check the spreadsheet
 
 Kind of slow for the updating to be immediately obvious, so I have set a few ships to rather high warp factors.  Trouble is then they actually arrive at their destination fairly promptly and their location is effectively rendered in real time.
 
+Ship UI indicators are based on the designs and art style of Star Trek Online, and the map and many of the patches are made by Koppenflak, or others related to the 26th Fleet (often for their character's own ship).
+
 Tips:
 * Clicking on a ship will bring up details about that ship.
 * If ships are stacked, double-clicking (or multi-clicking) will attempt to cycle through all the ships at that point.
